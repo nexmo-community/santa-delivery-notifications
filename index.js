@@ -66,15 +66,6 @@ router.get('/', (ctx) => {
     })
 })
 
-router.get('/users', (ctx) => {
-    ctx.body = users
-})
-
-router.get('/kill_session', (ctx) => {
-    ctx.session = null
-    ctx.status = 204
-})
-
 // Allow for FB Webhook to be setup
 router.get('/fb_subscribe', (ctx) => {
     if(ctx.request.query['hub.challenge']) {
@@ -93,7 +84,7 @@ router.post('/fb_subscribe', (ctx) => {
     const user = getUser(uuid)
     user.facebookPageSpecificUserId = fbPageSpecificUserId
 
-    console.log('user updated via /fb_inbound')
+    console.log('user updated via /fb_subscribe')
     console.log(user)
 
     ctx.status = 201
@@ -125,16 +116,18 @@ router.post('/inbound', (ctx) => {
     ctx.status = 200
 })
 
+// Useful development/debug routes
+router.get('/users', (ctx) => {
+    ctx.body = users
+})
+
+router.get('/kill_session', (ctx) => {
+    ctx.session = null
+    ctx.status = 204
+})
+
 app.use(router.routes())
   .use(router.allowedMethods())
-
-function checkNotificationSubscriptionData(ctx) {
-    console.log('userData')
-    console.log(ctx.session.userData)
-
-    console.log('fbData')
-    console.log(ctx.session.fbData)
-}
 
 const port = process.env.PORT || 1234
 app.listen(port, () => console.log('server listening on port', port))
