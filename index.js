@@ -76,7 +76,7 @@ router.get('/kill_session', (ctx) => {
 })
 
 // Allow for FB Webhook to be setup
-router.get('/fb_inbound', (ctx) => {
+router.get('/fb_subscribe', (ctx) => {
     if(ctx.request.query['hub.challenge']) {
         ctx.response.body = ctx.request.query['hub.challenge']
     }
@@ -85,7 +85,7 @@ router.get('/fb_inbound', (ctx) => {
 })
 
 // Handle FB Messenger subscribe
-router.post('/fb_inbound', (ctx) => {
+router.post('/fb_subscribe', (ctx) => {
     const messageContext = ctx.request.body.entry[0].messaging[0]
     const uuid = messageContext.optin.ref
     const fbPageSpecificUserId = messageContext.sender.id
