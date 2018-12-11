@@ -1,0 +1,31 @@
+{
+  "name": "santa-delivery-notifications",
+  "version": "0.1.0",
+  "description": "An application to notify you when Santa has delivered your presents using Nexmo WhatsApp, Facebook Viber or SMS messages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nexmo",
+    "sms",
+    "whatsapp",
+    "facebook",
+    "viber",
+    "sms",
+    "messaging"
+  ],
+  "author": "phil@leggetter.co.uk",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "koa": "^2.6.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-ejs": "^4.1.2",
+    "koa-router": "^7.4.0",
+    "koa-session": "^5.10.0",
+    "koa-static": "^5.0.0",
+    "nexmo": "^2.4.2-beta-1",
+    "uuid": "^3.3.2"
+  }
+}
