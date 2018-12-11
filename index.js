@@ -44,7 +44,7 @@ render(app, {
 });
 
 router.get('/', (ctx) => {
-    if (ctx.session.sessionId === undefined) {
+    if (getUser(ctx.session.sessionId) === undefined) {
         const userUUID = uuidv1() 
         ctx.session.sessionId = userUUID
 
@@ -54,6 +54,10 @@ router.get('/', (ctx) => {
             tel: null,
             facebookPageSpecificUserId: null
         }
+    }
+    else {
+        console.log('user exists')
+        console.log(getUser(ctx.session.sessionId))
     }
 
     return ctx.render('index', {
