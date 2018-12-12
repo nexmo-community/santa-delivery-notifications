@@ -1,6 +1,7 @@
 require('dotenv').load()
 
 const path = require('path')
+const axios = require('axios')
 
 const koa = require('koa')
 const koaRouter = require('koa-router')
@@ -114,6 +115,75 @@ router.post('/inbound', (ctx) => {
 
     console.log(ctx.request.body)
     ctx.status = 200
+})
+
+// Santa checking
+router.get('/check_all_users', (ctx) => {
+    const results = [];
+
+    for(let uuid in users) {
+        let user = users[uuid]
+        console.log(user)
+        if(user.notificationSent !== true) {
+            // Check location
+            axios.get(`https://wheres-santa.herokuapp.com/heading?lat=${user.coords.lat}&lng=${user.coords.lng}`)
+            .then((santaResponse) => {
+                console.log('Santa')
+                console.log(santaResponse.data)
+                const data = santaResponse.data
+
+                results.push(data)
+
+                if(santaResponse.data.direction === 'away') {
+                    const notificationText = `Santa has delivered to you in ${data.nearest.name}! Which means your presents are now under your tree 🎄. His next stop is ${data.next.name} 🎅✨`
+
+                    // Santa has now passed their location
+                    nexmo.dispatch.create("failover", [
+                        {
+                          "from": { "type": "messenger", "id": process.env.FACEBOOK_PAGE_ID },
+                          "to": { "type": "messenger", "id": user.facebookPageSpecificUserId },
+                          "message": {
+                            "content": {
+                              "type": "text",
+                              "text": notificationText
+                            }
+                          },
+                          "failover":{
+                            "expiry_time": 600,
+                            "condition_status": "read"
+                          }
+                        },
+                        {
+                          "from": {"type": "sms", "number": process.env.APP_PHONE_NUMBER},
+                          "to": { "type": "sms", "number": user.tel},
+                          "message": {
+                            "content": {
+                              "type": "text",
+                              "text": notificationText
+                            }
+                          }
+                        },
+                        (err, data) => {
+                            if(err) {
+                                console.error(err)
+                            }
+                            else {
+                                console.log(data.dispatch_uuid)
+                            }
+                        }
+                      ])
+                }
+            })
+            .catch(err => {
+                console.error(err)
+            })
+        }
+
+        console.log('Santa notifications complete')
+        console.log(results)
+    }
+
+    ctx.status = 202
 })
 
 // Useful development/debug routes
