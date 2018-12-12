@@ -135,9 +135,9 @@ router.get('/check_all_users', (ctx) => {
                 results.push(data)
 
                 if(santaResponse.data.direction === 'away') {
+                    // Santa has now passed their location
                     const notificationText = `Santa has delivered to you in ${data.nearest.name}! Which means your presents are now under your tree 🎄. His next stop is ${data.next.name} 🎅✨`
 
-                    // Santa has now passed their location
                     nexmo.dispatch.create("failover", [
                         {
                           "from": { "type": "messenger", "id": process.env.FACEBOOK_PAGE_ID },
@@ -168,6 +168,7 @@ router.get('/check_all_users', (ctx) => {
                                 console.error(err)
                             }
                             else {
+                                user.notificationSent = true
                                 console.log(data.dispatch_uuid)
                             }
                         }
