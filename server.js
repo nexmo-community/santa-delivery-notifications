@@ -85,6 +85,9 @@ router.post('/fb_subscribe', (ctx) => {
     const user = getUser(uuid)
     user.facebook_page_specific_id = fbPageSpecificUserId
 
+    const notifier = new Notifier()
+    notifier.sendSubscriptionConfirmation(user)
+
     console.log('user updated via /fb_subscribe')
     console.log(user)
 
