@@ -5,18 +5,26 @@ const path = require('path')
 const koa = require('koa')
 const koaRouter = require('koa-router')
 const static = require('koa-static')
-const render = require('koa-ejs');
+const render = require('koa-ejs')
 const bodyParser = require('koa-bodyparser')
-const session = require('koa-session');
+const session = require('koa-session')
 
-const uuidv1 = require('uuid/v1');
+const uuidv1 = require('uuid/v1')
 
 const app = new koa()
 const router = new koaRouter()
 
 const Notifier = require('./src/Notifier')
 
-app.keys = [process.env.KOA_APP_SECRET];
+const {
+    KOA_APP_SECRET,
+    FACEBOOK_APP_ID,
+    NODE_ENV
+  } = process.env
+
+const DEV = (NODE_ENV === 'development')
+
+app.keys = [KOA_APP_SECRET]
 
 const users = {}
 
@@ -45,7 +53,7 @@ router.get('/', (ctx) => {
             uuid: userUUID,
             coords: {},
             tel: null,
-            facebookPageSpecificUserId: null
+            facebook_page_specific_id: null
         }
     }
     else {
@@ -55,7 +63,7 @@ router.get('/', (ctx) => {
 
     return ctx.render('index', {
         user: getUser(ctx.session.sessionId),
-        CONFIG: {FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID}
+        CONFIG: {FACEBOOK_APP_ID: FACEBOOK_APP_ID}
     })
 })
 
@@ -75,7 +83,7 @@ router.post('/fb_subscribe', (ctx) => {
     const fbPageSpecificUserId = messageContext.sender.id
 
     const user = getUser(uuid)
-    user.facebookPageSpecificUserId = fbPageSpecificUserId
+    user.facebook_page_specific_id = fbPageSpecificUserId
 
     console.log('user updated via /fb_subscribe')
     console.log(user)
@@ -109,20 +117,31 @@ router.post('/inbound', (ctx) => {
     ctx.status = 200
 })
 
-// Santa checking
+// Useful development/debug routes
 router.get('/check_all_users', (ctx) => {
+    if(!DEV) {
+        ctx.status = 401
+        return
+    }
     const notifier = new Notifier()
     notifier.checkNotifications(users)
 
     ctx.status = 202
 })
 
-// Useful development/debug routes
 router.get('/users', (ctx) => {
+    if(!DEV) {
+        ctx.status = 401
+        return
+    }
     ctx.body = users
 })
 
 router.get('/kill_session', (ctx) => {
+    if(!DEV) {
+        ctx.status = 401
+        return
+    }
     ctx.session = null
     ctx.status = 204
 })
