@@ -2,11 +2,20 @@ const axios = require('axios')
 
 const Nexmo = require('nexmo')
 
+const {
+    NEXMO_API_KEY,
+    NEXMO_API_SECRET,
+    NEXMO_APPLICATION_ID,
+    NEXMO_APPLICATION_PRIVATE_KEY_PATH,
+    FACEBOOK_PAGE_ID,
+    APP_PHONE_NUMBER
+  } = process.env;
+
 const nexmo = new Nexmo({
-  apiKey: process.env.NEXMO_API_KEY,
-  apiSecret: process.env.NEXMO_API_SECRET,
-  applicationId: process.env.NEXMO_APPLICATION_ID,
-  privateKey: process.env.NEXMO_APPLICATION_PRIVATE_KEY_PATH
+  apiKey: NEXMO_API_KEY,
+  apiSecret: NEXMO_API_SECRET,
+  applicationId: NEXMO_APPLICATION_ID,
+  privateKey: NEXMO_APPLICATION_PRIVATE_KEY_PATH
 })
 
 class Notifier {
@@ -51,7 +60,7 @@ class Notifier {
 
         nexmo.dispatch.create("failover", [
             {
-            "from": { "type": "messenger", "id": process.env.FACEBOOK_PAGE_ID },
+            "from": { "type": "messenger", "id": FACEBOOK_PAGE_ID },
             "to": { "type": "messenger", "id": user.facebookPageSpecificUserId },
             "message": {
                 "content": {
@@ -65,7 +74,7 @@ class Notifier {
             }
             },
             {
-            "from": {"type": "sms", "number": process.env.APP_PHONE_NUMBER},
+            "from": {"type": "sms", "number": APP_PHONE_NUMBER},
             "to": { "type": "sms", "number": user.tel},
             "message": {
                 "content": {
