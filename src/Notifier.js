@@ -46,9 +46,7 @@ class Notifier {
     async checkNotification(user) {
         if(user.notificationSent !== true) {
             // Check location
-            const santaResponse = await this.getSantaHeading(user.coords.lat, user.coords.lng).data
-
-            this.results.push(santaResponse.data)
+            const santaResponse = await this.getSantaHeading(user.coords.lat, user.coords.lng)
 
             if(data.direction === 'away') {
                 // Santa has now passed their location
