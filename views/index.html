@@ -1,17 +1,48 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 
 <head>
-    <title>Facebook Login JavaScript Example</title>
-    <meta charset="UTF-8">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
     <style>
-        .inactive {
-            pointer-events: none;
-            filter: blur(5px);
-            filter: grayscale(1);
+        .row {
+            margin-bottom: 10px;
+        }
+
+        .status {
+            text-align: right;
+            color: red;
+        }
+
+        .status:before {
+            content: '✘';
+        }
+
+        .status.checked {
+            color: green;
+        }
+
+        .status.checked:before {
+            content: '✔︎';
+        }
+
+        #status_text {
+            text-align: center;
+            background-color: red;
+            color: white;
+        }
+
+        #status_text.checked {
+            background-color: green;
         }
     </style>
+
+    <title>Hello, world!</title>
 </head>
 
 <body>
@@ -23,58 +54,62 @@
     <script src="index.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <p>To receive Santa Delivery Notifications via Facebook (with SMS fallback) please:</p>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
 
-    <ol>
-        <li class="step-1">
-            <div class="instruction">    
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2>To receive Santa Delivery Notifications via Facebook (with SMS fallback) please:</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1 status" id="login_status"></div>
+            <div class="col">
                 Login to Facebook
             </div>
-            <div class="action">
+            <div class="col">
                 <fb:login-button scope="public_profile,email" autologoutlink="true" onlogin="checkLoginState()">
                 </fb:login-button>
             </div>
-            <div class="status"></div>
-        </li>
-        <li class="step-2">
-            <div class="instruction">
+        </div>
+        <div class="row">
+            <div class="col-1 status" id="position_status"></div>
+            <div class="col">
                 Let us know your location
             </div>
-            <div class="action">
-                <button onclick="getLocation()">Go!</button>
+            <div class="col">
+                <button onclick="getLocation()" class="btn btn-primary btn-sm">Go!</button>
             </div>
-            <div class="status"></div>
-        </li>
-        <li class="step-3">
-            <div class="instruction">
+        </div>
+        <div class="row">
+            <div class="col-1 status" id="tel_status"></div>
+            <div class="col">
                 Tell us your phone number for SMS notification fallback
             </div>
-            <div class="action">
+            <div class="col">
                 <input id="sms_tel" type="tel" placeholder="Your Phone Number" value="<%= user.tel %>" required />
                 <button onclick="checkTel()">Ok</button>
             </div>
-            <div class="status"></div>
-        </li>
-        <li class="step-4">
-            <div class="instruction">
+        </div>
+        <div class="row">
+            <div class="col-1 status" id="subscribe_status"></div>
+            <div class="col">
                 Subscribe for updates in Facebook Messenger
             </div>
-            <div class="action">
+            <div class="col">
                 <!-- https://developers.facebook.com/docs/messenger-platform/discovery/send-to-messenger-plugin -->
-                <div id="send_to_messenger" class="fb-send-to-messenger"
-                    messenger_app_id="261968191158959"
-                    page_id="1602071969893801"
-                    data-ref="<%= user.uuid %>" 
-                    color="blue" 
-                    size="large",
-                    cta_text="SUBSCRIBE">
+                <div id="send_to_messenger" class="fb-send-to-messenger" messenger_app_id="261968191158959" page_id="1602071969893801"
+                    data-ref="<%= user.uuid %>" color="blue" size="large" , cta_text="SUBSCRIBE">
                 </div>
             </div>
-            <div class="status"></div>
-            
-        </li>
-    </ol>
-    
+        </div>
+        <div class="row">
+            <div class="col-12" id="status_text"></div>
+        </div>
+    </div>
+
+
 </body>
 
 </html>

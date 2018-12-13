@@ -1,4 +1,7 @@
-const userData = {}
+const userData = {
+    facebookStatus: null,
+    subscribed: false
+}
 
 // Facebook
 window.fbAsyncInit = function () {
@@ -13,15 +16,21 @@ window.fbAsyncInit = function () {
 
     FB.Event.subscribe('send_to_messenger', function(e) {
         // callback for events triggered by the plugin
-        console.log(e)
+
+        if(e.event === 'opt_in') {
+            userData.subscribed = true
+        }
+
+        updateUIStatus()
     });
+
+    checkTel()
 };
 
 function checkLoginState() {
     FB.getLoginStatus(statusChangeCallback)
 }
 
-let previousStatus = null;
 function statusChangeCallback(response) {
 
     console.log(response);
@@ -29,7 +38,7 @@ function statusChangeCallback(response) {
     // app know the current login status of the person.
     // Full docs on the response object can be found in the documentation
     // for FB.getLoginStatus().
-    if (response.status === 'connected' & previousStatus === 'unknown') {
+    if (response.status === 'connected' & userData.facebookStatus === 'unknown') {
         // Have changed from not logged in to logged in
         // Reload the page in order for the Subscribe to Messenger button to render
         window.location.reload()
@@ -39,7 +48,9 @@ function statusChangeCallback(response) {
         
     }
 
-    previousStatus = response.status;
+    userData.facebookStatus = response.status;
+
+    updateUIStatus()
 }
 
 (function (d, s, id) {
@@ -80,4 +91,56 @@ function updateUserData() {
       .catch((error) => {
         console.log(error);
       });
+
+    updateUIStatus()
+}
+
+function updateUIStatus() {
+    let checkedCount = 0;
+
+    const loginStatusEl = document.getElementById('login_status')
+    if(userData.facebookStatus === 'connected') {
+        loginStatusEl.classList.add('checked')
+        ++checkedCount
+    }
+    else {
+        loginStatusEl.classList.remove('checked')
+    }
+
+    const positionStatusEl = document.getElementById('position_status')
+    if(userData.coords) {
+        ++checkedCount
+        positionStatusEl.classList.add('checked')
+    }
+    else {
+        positionStatusEl.classList.remove('checked')
+    }
+
+    const telStatusEl = document.getElementById('tel_status')
+    if(userData.tel) {
+        ++checkedCount
+        telStatusEl.classList.add('checked')
+    }
+    else {
+        telStatusEl.classList.remove('checked')
+    }
+
+    const subscribedStatusEl = document.getElementById('subscribe_status')
+    if(userData.subscribed) {
+        ++checkedCount
+        subscribedStatusEl.classList.add('checked')
+    }
+    else {
+        subscribedStatusEl.classList.remove('checked')
+    }
+
+    const statusTextEl = document.getElementById('status_text');
+    if(checkedCount === 4) {
+        statusTextEl.innerText = 'You\'re all set for Santa Delivery Notifications 🎅'
+        statusTextEl.classList.add('checked')
+    }
+    else {
+        statusTextEl.innerText = 'Please perform all required actions to receive notifications.'
+        statusTextEl.classList.remove('checked')
+    }
 }
