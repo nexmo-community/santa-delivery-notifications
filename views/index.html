@@ -1,115 +1,152 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link
+      href="//fonts.googleapis.com/css?family=Mountains of Christmas&subset=latin"
+      rel="stylesheet"
+      type="text/css"
+    />
     <style>
-        .row {
-            margin-bottom: 10px;
-        }
+      .row {
+        margin-bottom: 10px;
+      }
 
-        .status {
-            text-align: right;
-            color: red;
-        }
+      .status {
+        text-align: right;
+        color: red;
+      }
 
-        .status:before {
-            content: '✘';
-        }
+      .status:before {
+        content: '✘';
+      }
 
-        .status.checked {
-            color: green;
-        }
+      .status.checked {
+        color: green;
+      }
 
-        .status.checked:before {
-            content: '✔︎';
-        }
+      .status.checked:before {
+        content: '✔︎';
+      }
 
-        #status_text {
-            text-align: center;
-            background-color: red;
-            color: white;
-        }
+      #status_text {
+        text-align: center;
+        background-color: red;
+        color: white;
+      }
 
-        #status_text.checked {
-            background-color: green;
-        }
+      #status_text.checked {
+        background-color: green;
+      }
+
+      h2 {
+        font-family: 'Mountains of Christmas', sans-serif;
+        text-align: center;
+        font-size: 2.4rem !important;
+      }
     </style>
 
     <title>Hello, world!</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <script>
-        const CONFIG = {
-            FACEBOOK_APP_ID: "<%= CONFIG.FACEBOOK_APP_ID %>"
-        }
+      const CONFIG = {
+        FACEBOOK_APP_ID: '<%= CONFIG.FACEBOOK_APP_ID %>'
+      };
     </script>
     <script src="index.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
 
     <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <h2>To receive Santa Delivery Notifications via Facebook (with SMS fallback) please:</h2>
-            </div>
+      <div class="row mt-2">
+        <div class="col-12">
+          <h2>
+            To receive Santa Delivery Notifications via Facebook (with SMS
+            fallback) please:
+          </h2>
         </div>
-        <div class="row">
-            <div class="col-1 status" id="login_status"></div>
-            <div class="col">
-                Login to Facebook
-            </div>
-            <div class="col">
-                <fb:login-button scope="public_profile,email" autologoutlink="true" onlogin="checkLoginState()">
-                </fb:login-button>
-            </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-1 status" id="login_status"></div>
+        <div class="col">Login to Facebook</div>
+        <div class="col">
+          <fb:login-button
+            scope="public_profile,email"
+            autologoutlink="true"
+            onlogin="checkLoginState()"
+          >
+          </fb:login-button>
         </div>
-        <div class="row">
-            <div class="col-1 status" id="position_status"></div>
-            <div class="col">
-                Let us know your location
-            </div>
-            <div class="col">
-                <button onclick="getLocation()" class="btn btn-primary btn-sm">Go!</button>
-            </div>
+      </div>
+      <div class="row">
+        <div class="col-1 status" id="position_status"></div>
+        <div class="col">Let us know your location</div>
+        <div class="col">
+          <button onclick="getLocation()" class="btn btn-primary btn-sm">
+            Go!
+          </button>
         </div>
-        <div class="row">
-            <div class="col-1 status" id="tel_status"></div>
-            <div class="col">
-                Tell us your phone number for SMS notification fallback
-            </div>
-            <div class="col">
-                <input id="sms_tel" type="tel" placeholder="Your Phone Number" value="<%= user.tel %>" required />
-                <button onclick="checkTel()">Ok</button>
-            </div>
+      </div>
+      <div class="row">
+        <div class="col-1 status" id="tel_status"></div>
+        <div class="col">
+          Tell us your phone number for SMS notification fallback
         </div>
-        <div class="row">
-            <div class="col-1 status" id="subscribe_status"></div>
-            <div class="col">
-                Subscribe for updates in Facebook Messenger
-            </div>
-            <div class="col">
-                <!-- https://developers.facebook.com/docs/messenger-platform/discovery/send-to-messenger-plugin -->
-                <div id="send_to_messenger" class="fb-send-to-messenger" messenger_app_id="261968191158959" page_id="1602071969893801"
-                    data-ref="<%= user.uuid %>" color="blue" size="large" , cta_text="SUBSCRIBE">
-                </div>
-            </div>
+        <div class="col">
+          <input
+            id="sms_tel"
+            type="tel"
+            placeholder="Your Phone Number"
+            value="<%= user.tel %>"
+            required
+          />
+          <button onclick="checkTel()">Ok</button>
         </div>
-        <div class="row">
-            <div class="col-12" id="status_text"></div>
+      </div>
+      <div class="row">
+        <div class="col-1 status" id="subscribe_status"></div>
+        <div class="col">Subscribe for updates in Facebook Messenger</div>
+        <div class="col">
+          <!--
+            https://developers.facebook.com/docs/messenger-platform/discovery/send-to-messenger-plugin
+          -->
+          <div
+            id="send_to_messenger"
+            class="fb-send-to-messenger"
+            messenger_app_id="261968191158959"
+            page_id="1602071969893801"
+            data-ref="<%= user.uuid %>"
+            color="blue"
+            size="large"
+            ,
+            cta_text="SUBSCRIBE"
+          ></div>
         </div>
+      </div>
+      <div class="row">
+        <div class="col-12 alert alert-danger mt-5" id="status_text"></div>
+      </div>
     </div>
-
-
-</body>
-
+  </body>
 </html>
