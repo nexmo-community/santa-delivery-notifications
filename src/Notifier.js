@@ -7,7 +7,7 @@ const {
     NEXMO_API_KEY,
     NEXMO_API_SECRET,
     NEXMO_APPLICATION_ID,
-    NEXMO_APPLICATION_PRIVATE_KEY_PATH,
+    NEXMO_APPLICATION_PRIVATE,
     FACEBOOK_PAGE_ID,
     APP_PHONE_NUMBER
   } = process.env;
@@ -16,7 +16,7 @@ const nexmo = new Nexmo({
   apiKey: NEXMO_API_KEY,
   apiSecret: NEXMO_API_SECRET,
   applicationId: NEXMO_APPLICATION_ID,
-  privateKey: NEXMO_APPLICATION_PRIVATE_KEY_PATH
+  privateKey: NEXMO_APPLICATION_PRIVATE
 })
 
 const dispatch = Promise.promisify(nexmo.dispatch.create, {context: nexmo.dispatch})
