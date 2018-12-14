@@ -1,5 +1,7 @@
 const userData = {
     facebookStatus: null,
+    coords: null,
+    tel: null,
     subscribed: false
 }
 
