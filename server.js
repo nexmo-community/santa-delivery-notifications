@@ -15,6 +15,7 @@ const app = new koa()
 const router = new koaRouter()
 
 const Notifier = require('./src/Notifier')
+const SubscriptionStore = require('./src/SubscriptionStore')
 
 const {
     KOA_APP_SECRET,
@@ -27,11 +28,11 @@ const DEV = (NODE_ENV === 'development')
 
 app.keys = [KOA_APP_SECRET]
 
-const users = {}
+const subscriptionStore = new SubscriptionStore()
 
-function getUser(uuid) {
-    return users[uuid]
-}
+// Session users until we get all the information required
+// for a Santa Delivery Notification
+const sessionUsers = {}
 
 app.use(session(app))
 app.use(static('public/'))
@@ -46,11 +47,11 @@ render(app, {
 });
 
 router.get('/', (ctx) => {
-    if (getUser(ctx.session.sessionId) === undefined) {
+    if (sessionUsers[ctx.session.sessionId] === undefined) {
         const userUUID = uuidv1() 
         ctx.session.sessionId = userUUID
 
-        users[userUUID] = {
+        sessionUsers[userUUID] = {
             uuid: userUUID,
             coords: {},
             tel: null,
@@ -59,11 +60,11 @@ router.get('/', (ctx) => {
     }
     else {
         console.log('user exists')
-        console.log(getUser(ctx.session.sessionId))
+        console.log(sessionUsers[ctx.session.sessionId])
     }
 
     return ctx.render('index', {
-        user: getUser(ctx.session.sessionId),
+        user: sessionUsers[ctx.session.sessionId],
         CONFIG: {FACEBOOK_APP_ID: FACEBOOK_APP_ID}
     })
 })
@@ -79,31 +80,43 @@ router.get('/fb_subscribe', (ctx) => {
 })
 
 // Handle FB Messenger opt-in subscribe webhook
-router.post('/fb_subscribe', (ctx) => {
+router.post('/fb_subscribe', async (ctx) => {
     const messageContext = ctx.request.body.entry[0].messaging[0]
     const uuid = messageContext.optin.ref
     const fbPageSpecificUserId = messageContext.sender.id
 
-    const user = getUser(uuid)
-    user.facebook_page_specific_id = fbPageSpecificUserId
+    const sessionUser = sessionUsers[uuid]
+    sessionUser.facebook_page_specific_id = fbPageSpecificUserId
 
-    const notifier = new Notifier()
-    notifier.sendSubscriptionConfirmation(user)
+    let httpStatus = null
+    let subscriptionResult = null
+    try {
+        subscriptionResult = await subscriptionStore.addSubscription(sessionUser)
+    }
+    catch(error) {
+        console.error(error)
+    }
 
-    console.log('user updated via /fb_subscribe')
-    console.log(user)
+    if(subscriptionResult._id) {
+        const notifier = new Notifier()
+        notifier.sendSubscriptionConfirmation(subscriptionResult)
+    }
 
-    ctx.status = 201
+    console.log('/fb_subscribe result')
+    console.log(subscriptionResult)
+
+    // Always return 200 to Facebook
+    ctx.status = 200
 })
 
 // Get user data following Messenger subscribe
 router.post('/user_data', (ctx) => {
-    const user = getUser(ctx.session.sessionId)
-    user.coords = ctx.request.body.coords
-    user.tel = ctx.request.body.tel
+    const sessionUser = sessionUsers[ctx.session.sessionId]
+    sessionUser.coords = ctx.request.body.coords
+    sessionUser.tel = ctx.request.body.tel
 
-    console.log('user updated via /user_data')
-    console.log(user)
+    console.log('sessionUser updated via /user_data')
+    console.log(sessionUser)
 
     ctx.status = 200
 })
@@ -123,23 +136,54 @@ router.post('/inbound', (ctx) => {
 })
 
 // Useful development/debug routes
-router.get('/check_all_users', (ctx) => {
+router.get('/check_all_subscriptions', async (ctx) => {
     if(!DEV) {
         ctx.status = 401
         return
     }
+
+    const subscriptions = await subscriptionStore.getPendingNotifications()
+
+    console.log(subscriptions)
+
     const notifier = new Notifier()
-    notifier.checkNotifications(users)
+    subscriptions.forEach(async subscription => {
+        console.log(subscription)
+        
+        const checkResult = await notifier.checkDeliveryNotification(subscription)
+        if(checkResult.sent) {
+            subscription.notification_sent = true
+            // update store
+            subscriptionStore.updateSubscription(subscription)
+        }
+
+    })
 
     ctx.status = 202
 })
 
-router.get('/users', (ctx) => {
+router.get('/subscriptions', async (ctx) => {
     if(!DEV) {
         ctx.status = 401
         return
     }
-    ctx.body = users
+    ctx.body = await subscriptionStore.getNotifications()
+})
+
+router.get('/pending_subscriptions', async (ctx) => {
+    if(!DEV) {
+        ctx.status = 401
+        return
+    }
+    ctx.body = await subscriptionStore.getPendingNotifications()
+})
+
+router.get('/session_users', (ctx) => {
+    if(!DEV) {
+        ctx.status = 401
+        return
+    }
+    ctx.body = sessionUsers
 })
 
 router.get('/kill_session', (ctx) => {

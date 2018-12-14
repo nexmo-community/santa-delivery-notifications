@@ -1,4 +1,5 @@
 const axios = require('axios')
+var Promise = require('bluebird');
 
 const Nexmo = require('nexmo')
 
@@ -18,42 +19,38 @@ const nexmo = new Nexmo({
   privateKey: NEXMO_APPLICATION_PRIVATE_KEY_PATH
 })
 
+const dispatch = Promise.promisify(nexmo.dispatch.create, {context: nexmo.dispatch})
+
 class Notifier {
 
     constructor() {
         this.results = []
     }
 
-    async sendSubscriptionConfirmation(user) {
-        const santaResponse = await this.getSantaHeading(user.coords.lat, user.coords.lng)
+    async sendSubscriptionConfirmation(subscription) {
+        const santaResponse = await this.getSantaHeading(subscription.coords.lat, subscription.coords.lng)
 
         console.log(santaResponse.data)
 
         const notificationText = `You've subscribed to Santa Delivery Notifications for the area of ${santaResponse.data.nearest.name}! You'll be notified as soon as Santa has delivered to this area 🎅🎁`
 
-        this.sendNotification(user, notificationText)
+        this.sendNotification(subscription, notificationText)
     }
 
-    checkNotifications(users) {
-        for(let uuid in users) {
-            let user = users[uuid]
-            console.log(user)
-            
-            this.checkNotification(user)
-        }
-    }
+    async checkDeliveryNotification(subscription) {
+        let checkResult = {sent: false, result: null}
 
-    async checkNotification(user) {
-        if(user.notificationSent !== true) {
-            // Check location
-            const santaResponse = await this.getSantaHeading(user.coords.lat, user.coords.lng)
+        // Check location
+        const santaResponse = await this.getSantaHeading(subscription.coords.lat, subscription.coords.lng)
 
-            if(data.direction === 'away') {
-                // Santa has now passed their location
-                const notificationText = `Santa has delivered to you in ${santaResponse.data.nearest.name}! Which means your presents are now under your tree 🎄. His next stop is ${santaResponse.data.next.name} 🎅✨`
-                this.sendNotification(user, notificationText) 
-            }
+        if(santaResponse.data.direction === 'away') {
+            // Santa has now passed their location
+            const notificationText = `Santa has delivered to you in ${santaResponse.data.nearest.name}! Which means your presents are now under your tree 🎄. His next stop is ${santaResponse.data.next.name} 🎅✨`
+            checkResult.result = await this.sendNotification(subscription, notificationText)
+            checkResult.sent = true;
         }
+        
+        return checkResult
     }
 
     async getSantaHeading(lat, lng) {
@@ -65,12 +62,12 @@ class Notifier {
         }
     }
 
-    sendNotification(user, notificationText) {
+    async sendNotification(subscription, notificationText) {
 
-        nexmo.dispatch.create("failover", [
+        return await dispatch("failover", [
             {
                 "from": { "type": "messenger", "id": FACEBOOK_PAGE_ID },
-                "to": { "type": "messenger", "id": user.facebook_page_specific_id },
+                "to": { "type": "messenger", "id": subscription.facebook_page_specific_id },
                 "message": {
                     "content": {
                         "type": "text",
@@ -84,24 +81,12 @@ class Notifier {
             },
                 {
                 "from": {"type": "sms", "number": APP_PHONE_NUMBER},
-                "to": { "type": "sms", "number": user.tel},
+                "to": { "type": "sms", "number": subscription.tel},
                 "message": {
                     "content": {
                     "type": "text",
                     "text": notificationText
                     }
-                }
-            },
-            (err, result) => {
-                if(err) {
-                    console.error(err)
-                }
-                else {
-                    console.log('Dispatch API called')
-                    console.log(result)
-
-                    user.notificationSent = true
-                    console.log(result.dispatch_uuid)
                 }
             }
         ])

@@ -19,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
     "dotenv": "^6.2.0",
     "koa": "^2.6.2",
     "koa-bodyparser": "^4.2.1",
@@ -26,7 +27,9 @@
     "koa-router": "^7.4.0",
     "koa-session": "^5.10.0",
     "koa-static": "^5.0.0",
+    "mongoose": "^5.3.16",
     "nexmo": "^2.4.2-beta-1",
+    "nodemon": "^1.18.8",
     "uuid": "^3.3.2"
   }
 }
