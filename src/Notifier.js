@@ -24,7 +24,6 @@ const dispatch = Promise.promisify(nexmo.dispatch.create, {context: nexmo.dispat
 class Notifier {
 
     constructor() {
-        this.results = []
     }
 
     async sendSubscriptionConfirmation(subscription) {

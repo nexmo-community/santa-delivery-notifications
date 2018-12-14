@@ -28,6 +28,7 @@ const DEV = (NODE_ENV === 'development')
 
 app.keys = [KOA_APP_SECRET]
 
+const notifier = new Notifier()
 const subscriptionStore = new SubscriptionStore()
 
 // Session users until we get all the information required
@@ -92,14 +93,12 @@ router.post('/fb_subscribe', async (ctx) => {
     let subscriptionResult = null
     try {
         subscriptionResult = await subscriptionStore.addSubscription(sessionUser)
+
+        
+        notifier.sendSubscriptionConfirmation(subscriptionResult)
     }
     catch(error) {
         console.error(error)
-    }
-
-    if(subscriptionResult._id) {
-        const notifier = new Notifier()
-        notifier.sendSubscriptionConfirmation(subscriptionResult)
     }
 
     console.log('/fb_subscribe result')
@@ -110,14 +109,20 @@ router.post('/fb_subscribe', async (ctx) => {
 })
 
 // Get user data following Messenger subscribe
-router.post('/user_data', (ctx) => {
+router.post('/user_data', async (ctx) => {
     const sessionUser = sessionUsers[ctx.session.sessionId]
     sessionUser.coords = ctx.request.body.coords
     sessionUser.tel = ctx.request.body.tel
 
+    if(sessionUser.coords) {
+        const heading = await notifier.getSantaHeading(sessionUser.coords.lat, sessionUser.coords.lng)
+        sessionUser.location_text = heading.data.nearest.name
+    }
+
     console.log('sessionUser updated via /user_data')
     console.log(sessionUser)
 
+    ctx.body = sessionUser
     ctx.status = 200
 })
 
@@ -146,7 +151,6 @@ router.get('/check_all_subscriptions', async (ctx) => {
 
     console.log(subscriptions)
 
-    const notifier = new Notifier()
     subscriptions.forEach(async subscription => {
         console.log(subscription)
         
