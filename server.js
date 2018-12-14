@@ -19,6 +19,7 @@ const Notifier = require('./src/Notifier')
 const {
     KOA_APP_SECRET,
     FACEBOOK_APP_ID,
+    FACEBOOK_HUB_CHALLENGE_VERIFY_TOKEN,
     NODE_ENV
   } = process.env
 
@@ -69,14 +70,15 @@ router.get('/', (ctx) => {
 
 // Allow for FB Webhook to be setup
 router.get('/fb_subscribe', (ctx) => {
-    if(ctx.request.query['hub.challenge']) {
+    if(ctx.request.query['hub.verify_token'] === FACEBOOK_HUB_CHALLENGE_VERIFY_TOKEN &&
+    ctx.request.query['hub.challenge']) {
         ctx.response.body = ctx.request.query['hub.challenge']
     }
 
     ctx.status = 200
 })
 
-// Handle FB Messenger subscribe
+// Handle FB Messenger opt-in subscribe webhook
 router.post('/fb_subscribe', (ctx) => {
     const messageContext = ctx.request.body.entry[0].messaging[0]
     const uuid = messageContext.optin.ref
