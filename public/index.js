@@ -35,11 +35,6 @@ function checkLoginState() {
 
 function statusChangeCallback(response) {
 
-    console.log(response);
-    // The response object is returned with a status field that lets the
-    // app know the current login status of the person.
-    // Full docs on the response object can be found in the documentation
-    // for FB.getLoginStatus().
     if (response.status === 'connected' & userData.facebookStatus === 'unknown') {
         // Have changed from not logged in to logged in
         // Reload the page in order for the Subscribe to Messenger button to render
