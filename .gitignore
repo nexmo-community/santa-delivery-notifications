@@ -2,3 +2,4 @@ node_modules
 .env
 *.key
 .DS_Store
+.nexmo-app
